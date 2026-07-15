@@ -76,6 +76,7 @@ from holmes.utils.holmes_status import (
 )
 from holmes.utils.holmes_sync_toolsets import holmes_sync_toolsets_status
 from holmes.utils.auth import AUTH_EXEMPT_PATHS, extract_api_key
+from holmes.utils.robusta_config_watcher import start_robusta_config_watcher
 from holmes.utils.log import (
     EndpointFilter,
     JSON_LOG_DATEFMT,
@@ -976,6 +977,11 @@ def main():
     # Sync before server start
     sync_before_server_start()
     _toolset_status_refresh_loop()
+
+    # Restart when the mounted Robusta config changes (e.g. cluster_name renamed
+    # via helm upgrade) - Holmes reads it only at startup, so without this it
+    # keeps serving with stale values until manually restarted.
+    start_robusta_config_watcher()
 
     # Start server
     logging.info(f"Holmes API serving {scheme} on {HOLMES_HOST}:{HOLMES_PORT}")
