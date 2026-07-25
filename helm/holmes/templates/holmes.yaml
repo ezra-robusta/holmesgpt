@@ -39,7 +39,10 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
         # checksum annotation triggering pod reload when .Values.toolsets changes by helm upgrade
-        # mcpAddons/k8sRBAC are included because they also feed custom-toolsets-configmap
+        # mcpAddons/k8sRBAC also feed custom-toolsets-configmap. They already reached this hash
+        # indirectly: toolset-config.yaml calls mergeOverwrite on .Values.toolsets/.Values.mcp_servers,
+        # which mutates those shared maps in place. Listing them makes the coverage explicit rather
+        # than a side effect of another template's render order.
         checksum/toolset-config: {{ list .Values.toolsets .Values.modelList .Values.mcp_servers .Values.customSkillPaths .Values.customSkills .Values.mcpAddons .Values.k8sRBAC | toYaml | sha256sum }}
     spec:
       serviceAccountName: {{ include "holmes.serviceAccountName" . }}
