@@ -98,6 +98,28 @@ If the same logs also show a LiteLLM warning about failing to fetch the model co
 
 ---
 
+## 8. HolmesGPT Restarts After a `helm upgrade` { #restart-after-config-change }
+
+After a `helm upgrade` that changed `clusterName` (or another Robusta setting HolmesGPT reads), the pod restarts on its own a minute or two later. `kubectl describe pod` shows:
+
+```text
+Warning  Unhealthy  kubelet  Liveness probe failed: HTTP probe failed with statuscode: 503
+```
+
+**This is intentional, not a crash.** HolmesGPT reads its cluster name and Robusta token from the mounted `robusta-playbooks-config-secret` once, at startup. A `helm upgrade` rewrites that secret but does not change the HolmesGPT pod spec, so nothing rolls the deployment — without this restart HolmesGPT would keep running under the old cluster name and stop picking up work (scheduled reports, for example) sent to the new one.
+
+So HolmesGPT reports itself unhealthy once it notices the mounted config no longer matches what it loaded, and lets Kubernetes restart it with the fresh values. The pod log states the reason:
+
+```text
+/etc/robusta/config/active_playbooks.yaml changed since startup; reporting unhealthy so Kubernetes restarts Holmes with the new config
+```
+
+Playbook-only edits are ignored, since those belong to robusta-runner (which hot-reloads them) and shouldn't interrupt in-flight investigations.
+
+If the pod restarts repeatedly rather than once, the mounted secret is genuinely changing on every kubelet sync — check for another process writing `robusta-playbooks-config-secret`.
+
+---
+
 ## Still stuck?
 
 Join our [Slack community](https://cloud-native.slack.com/archives/C0A1SPQM5PZ) or [open a GitHub issue](https://github.com/HolmesGPT/holmesgpt/issues) for help.

@@ -76,6 +76,10 @@ from holmes.utils.holmes_status import (
 )
 from holmes.utils.holmes_sync_toolsets import holmes_sync_toolsets_status
 from holmes.utils.auth import AUTH_EXEMPT_PATHS, extract_api_key
+from holmes.utils.robusta_config_change import (
+    record_robusta_config_fingerprint,
+    robusta_config_changed,
+)
 from holmes.utils.log import (
     EndpointFilter,
     JSON_LOG_DATEFMT,
@@ -201,6 +205,9 @@ def init_config():
 
 
 config, dal = init_config()
+# Snapshot the mounted Robusta config now that we've read it, so /healthz can
+# tell when a helm upgrade has changed it out from under us.
+record_robusta_config_fingerprint()
 
 
 def sync_before_server_start():
@@ -882,6 +889,15 @@ def get_info(detail: Optional[str] = None) -> InfoResponse:
 
 @app.get("/healthz")
 def health_check():
+    # A helm upgrade that changes clusterName rewrites the mounted Robusta
+    # config but leaves the Holmes pod spec untouched, so nothing rolls the
+    # deployment and we'd keep serving under the stale cluster name. Failing
+    # liveness is what gets us restarted with the new config.
+    if robusta_config_changed():
+        raise HTTPException(
+            status_code=503,
+            detail="Mounted Robusta config changed since startup; awaiting restart",
+        )
     return {"status": "healthy"}
 
 
