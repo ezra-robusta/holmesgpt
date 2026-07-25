@@ -1,13 +1,22 @@
+import pytest
 import yaml
 from fastapi.testclient import TestClient
 
 from holmes.common import env_vars
+from holmes.utils import robusta_config_change
 from holmes.utils.robusta_config_change import (
     record_robusta_config_fingerprint,
     robusta_config_changed,
 )
 
 CLUSTER = "prod-us-west-2"
+
+
+@pytest.fixture(autouse=True)
+def reset_recorded_fingerprint():
+    """The recorded fingerprint is process-wide; don't leak it to other tests."""
+    yield
+    robusta_config_change._startup_fingerprint = None
 
 
 def _write_config(path, cluster_name=CLUSTER, playbooks=None, sinks=None):
