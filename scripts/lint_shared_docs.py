@@ -17,7 +17,10 @@ from pathlib import Path
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_PATHS = [REPO_ROOT / "docs" / "_shared"]
+DOCS_DIR = REPO_ROOT / "docs"
+DEFAULT_PATHS = [DOCS_DIR / "_shared"]
+SITE_URL = "https://holmesgpt.dev/"
+SITE_VERSION_RE = re.compile(r"^(latest|dev|\d+\.\d+\.\d+)/")
 ALLOWED_CUSTOM_FENCE = "holmes-config"
 ABSOLUTE_LINK_RE = re.compile(r"^(https?://|mailto:)")
 FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})\s*([^\s{`]*)")
@@ -66,6 +69,23 @@ def custom_fence_names() -> set:
     return names
 
 
+def site_page_exists(url: str) -> bool:
+    """Whether a holmesgpt.dev URL points at a page or file in docs/.
+
+    Relative links are checked by MkDocs; absolute ones are not, so this keeps
+    the snippets' links to this site from breaking silently.
+    """
+    path = SITE_VERSION_RE.sub("", url[len(SITE_URL) :].split("#")[0].split("?")[0])
+    stem = path.rstrip("/")
+    candidates = [DOCS_DIR / "index.md"] if not stem else []
+    candidates += [
+        DOCS_DIR / f"{stem}.md",
+        DOCS_DIR / stem / "index.md",
+        DOCS_DIR / stem,
+    ]
+    return any(c.is_file() for c in candidates)
+
+
 def lint_file(path: Path, forbidden_fences: set) -> list:
     problems = []
     fence = None
@@ -102,6 +122,10 @@ def lint_file(path: Path, forbidden_fences: set) -> list:
                             "relative link",
                             f"{target} (use an absolute https:// URL)",
                         )
+                    )
+                elif target.startswith(SITE_URL) and not site_page_exists(target):
+                    problems.append(
+                        (number, "broken link", f"{target} matches no page in docs/")
                     )
     if fence is not None:
         problems.append((number, "fenced code", "unterminated fenced code block"))
