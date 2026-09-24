@@ -13,8 +13,8 @@ import html
 import json
 import re
 import uuid
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 import markdown
 import yaml  # type: ignore
@@ -60,27 +60,63 @@ class HolmesConfigError(SuperFencesException):
     from a fence and renders the block as plain code; this one fails the build."""
 
 
-def validate_holmes_config(spec) -> None:
-    """Raise HolmesConfigError when a `holmes-config` block does not match its schema."""
-    problems = [
-        f"{'/'.join(str(p) for p in error.path) or '<root>'}: {error.message}"
-        for error in sorted(
-            HOLMES_CONFIG_VALIDATOR.iter_errors(spec), key=lambda e: list(e.path)
-        )
-    ]
-    if isinstance(spec, dict) and isinstance(spec.get("default_model"), str):
-        if spec["default_model"] not in (spec.get("models") or {}):
-            problems.append(f"default_model {spec['default_model']!r} is not in models")
-    if problems:
-        raise HolmesConfigError(f"invalid holmes-config block: {'; '.join(problems)}")
+ENV_REFERENCE_RE = re.compile(r"\{\{\s*env\.([A-Za-z_][A-Za-z0-9_]*)\s*\}\}")
+# Sections rendered from the author's text, which must be in block style.
+TEXT_SECTIONS = ("toolsets", "mcp_servers", "models")
 
 
-def _top_level_sections(source: str) -> dict:
+@dataclass
+class _Section:
+    """One top-level key of a block, as the author wrote it.
+
+    `lead` holds the column-0 comments above the key, so every comment renders
+    with its section in every tab.
+    """
+
+    lead: list
+    key_line: str
+    body: list
+
+    def as_key(self, name: str) -> str:
+        """The section under its key, renamed to `name`."""
+        key_line = re.sub(r"^[^:]+:", f"{name}:", self.key_line, count=1)
+        return _strip_blank_lines([*self.lead, key_line, *self.body])
+
+    def as_file(self) -> str:
+        """The section's body as a file of its own, dedented to column 0."""
+        indents = [
+            len(ln) - len(ln.lstrip())
+            for ln in self.body
+            if ln.strip() and not ln.lstrip().startswith("#")
+        ]
+        base = min(indents, default=0)
+        body = [ln[base:] if ln[:base].isspace() else ln for ln in self.body]
+        return _strip_blank_lines([*self.lead, *body])
+
+
+def _strip_blank_lines(lines: list) -> str:
+    return "\n".join(lines).strip("\n")
+
+
+def _uncommented(line: str) -> str:
+    """The line without its YAML comment (a `#` at the start or after a space,
+    outside quotes)."""
+    quote = None
+    for i, char in enumerate(line):
+        if quote:
+            quote = None if char == quote else quote
+        elif char in "'\"":
+            quote = char
+        elif char == "#" and (i == 0 or line[i - 1].isspace()):
+            return line[:i]
+    return line
+
+
+def _sections(source: str) -> dict:
     """Split the block's YAML text at its top-level keys.
 
     Rendering slices the author's text instead of re-dumping the parsed data, so
-    comments and key order survive into every tab. Column-0 comments and blank
-    lines go with the key that follows them.
+    comments and key order survive into every tab.
     """
     sections: dict = {}
     current = None
@@ -88,36 +124,64 @@ def _top_level_sections(source: str) -> dict:
     for line in source.splitlines():
         match = TOP_LEVEL_KEY_RE.match(line)
         if match:
-            current = match.group(1)
-            sections[current] = pending + [line]
+            current = sections[match.group(1)] = _Section(pending, line, [])
             pending = []
         elif not line.strip() or line.startswith("#"):
             pending.append(line)
         elif current is not None:
-            sections[current].extend(pending + [line])
+            current.body.extend(pending + [line])
             pending = []
-    return {key: "\n".join(lines).strip("\n") for key, lines in sections.items()}
+    # Comments after the last key go with the last section that renders as text.
+    last_text = [k for k in sections if k in TEXT_SECTIONS]
+    if last_text:
+        sections[last_text[-1]].body.extend(pending)
+    return sections
 
 
-def _section_body(section: str) -> Optional[str]:
-    """The indented body of a block-style section, dedented to column 0; None for
-    a flow-style section such as `models: {...}`."""
-    lines = section.split("\n")
-    key_line = next(i for i, ln in enumerate(lines) if TOP_LEVEL_KEY_RE.match(ln))
-    if TOP_LEVEL_KEY_RE.match(lines[key_line]).group(2).split("#")[0].strip():
-        return None
-    body = lines[key_line + 1 :]
-    indents = [
-        len(ln) - len(ln.lstrip())
-        for ln in body
-        if ln.strip() and not ln.lstrip().startswith("#")
+def parse_holmes_config(source: str) -> tuple:
+    """The block's data and its sections; HolmesConfigError when the block is
+    not valid YAML, does not match the schema, or cannot be rendered."""
+    try:
+        spec = yaml.safe_load(source)
+    except yaml.YAMLError as e:
+        raise HolmesConfigError(f"invalid holmes-config block: {e}") from e
+    problems = [
+        f"{'/'.join(str(p) for p in error.path) or '<root>'}: {error.message}"
+        for error in sorted(
+            HOLMES_CONFIG_VALIDATOR.iter_errors(spec), key=lambda e: list(e.path)
+        )
     ]
-    base = min(indents, default=0)
-    return "\n".join(ln[base:] if ln.strip() else "" for ln in body).strip("\n")
-
-
-def _rename_section(section: str, old: str, new: str) -> str:
-    return re.sub(rf"^{old}:", f"{new}:", section, count=1, flags=re.MULTILINE)
+    if problems:
+        raise HolmesConfigError(f"invalid holmes-config block: {'; '.join(problems)}")
+    if "default_model" in spec and spec["default_model"] not in spec["models"]:
+        problems.append(f"default_model {spec['default_model']!r} is not in models")
+    sections = _sections(source)
+    for key, section in sections.items():
+        if key not in TEXT_SECTIONS and any(
+            ln.lstrip().startswith("#") for ln in section.lead + section.body
+        ):
+            problems.append(
+                f"comments on {key} would not render in any tab; put them in the prose"
+            )
+    for key in TEXT_SECTIONS:
+        if (
+            key in sections
+            and _uncommented(sections[key].key_line).split(":", 1)[1].strip()
+        ):
+            problems.append(f"{key} must be written in block style")
+    # A reader follows one block, so it declares every variable it reads.
+    referenced = {
+        name
+        for line in source.splitlines()
+        for name in ENV_REFERENCE_RE.findall(_uncommented(line))
+    }
+    problems += [
+        f"{{{{ env.{name} }}}} is not declared in secrets"
+        for name in sorted(referenced - set(spec.get("secrets") or {}))
+    ]
+    if problems:
+        raise HolmesConfigError(f"invalid holmes-config block: {'; '.join(problems)}")
+    return spec, sections
 
 
 def _dump(data) -> str:
@@ -139,6 +203,9 @@ def _shell_quoted_example(env_name: str, secret: dict) -> str:
 
 def _code_step(md, intro: str, lang: str, code: str) -> str:
     """Highlighted like a regular fenced block, so tabs match hand-written pages."""
+    # pymdown-extensions has no public call that highlights with the site's
+    # configured settings; superfences' preprocessor holds that configuration,
+    # so its method gives the same markup, line anchors and copy button.
     block = md.preprocessors["fenced_code_block"].highlight(
         src=code, language=lang, options={}, md=md, classes=[], id_value="", attrs={}
     )
@@ -157,7 +224,9 @@ def _cli_steps(spec: dict, sections: dict, md):
                 for name, s in secrets.items()
             ),
         )
-    config = [sections[k] for k in ("toolsets", "mcp_servers") if k in sections]
+    config = [
+        sections[k].as_key(k) for k in ("toolsets", "mcp_servers") if k in sections
+    ]
     if config:
         yield _code_step(
             md,
@@ -172,7 +241,7 @@ def _cli_steps(spec: dict, sections: dict, md):
             "Add the following to <strong>~/.holmes/model_list.yaml</strong>. "
             "Create the file if it doesn't exist:",
             "yaml",
-            _section_body(sections["models"]) or _dump(spec["models"]),
+            sections["models"].as_file(),
         )
     if config:
         yield _code_step(
@@ -224,9 +293,11 @@ def _helm_steps(spec: dict, sections: dict, md):
         # The chart reads no default-model value; Holmes reads $MODEL.
         env_vars.append({"name": "MODEL", "value": spec["default_model"]})
     values = [_dump({"additionalEnvVars": env_vars})] if env_vars else []
-    values += [sections[k] for k in ("toolsets", "mcp_servers") if k in sections]
+    values += [
+        sections[k].as_key(k) for k in ("toolsets", "mcp_servers") if k in sections
+    ]
     if "models" in sections:
-        values.append(_rename_section(sections["models"], "models", "modelList"))
+        values.append(sections["models"].as_key("modelList"))
     yield _code_step(
         md,
         "When using the <strong>standalone Holmes Helm Chart</strong>, update your "
@@ -266,12 +337,7 @@ def holmes_config_fence_format(source, language, css_class, options, md, **kwarg
     Every block is validated against the schema; an invalid one fails the build.
     The fence does not process Jinja2, so `{{ env.VAR }}` stays as-is.
     """
-    try:
-        spec = yaml.safe_load(source)
-    except yaml.YAMLError as e:
-        raise HolmesConfigError(f"invalid holmes-config block: {e}") from e
-    validate_holmes_config(spec)
-    sections = _top_level_sections(source)
+    spec, sections = parse_holmes_config(source)
     tabs = (
         ("Holmes CLI", _cli_steps(spec, sections, md)),
         ("Holmes Helm Chart", _helm_steps(spec, sections, md)),
