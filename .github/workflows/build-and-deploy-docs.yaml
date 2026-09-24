@@ -9,12 +9,18 @@ on:
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
+      - 'pyproject.toml'
+      - 'poetry.lock'
       - 'scripts/lint_shared_docs.py'
+      - 'tests/docs/**'
       - '.github/workflows/build-and-deploy-docs.yaml'
 permissions:
   contents: read
 jobs:
+  # On pushes the deploy job lints and builds instead, so each event installs
+  # the dependencies once.
   check:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,11 +36,13 @@ jobs:
       # the portable Markdown subset (see the script's docstring).
       - name: Lint shared docs snippets
         run: poetry run python scripts/lint_shared_docs.py docs/_shared
+      # The main test workflow skips changes under docs/, which holds the fence.
+      - name: Test the docs fence and lint
+        run: poetry run pytest tests/docs --no-cov
       # Fails on an invalid holmes-config block or a missing snippet include.
       - name: Build docs
         run: poetry run mkdocs build
   deploy:
-    needs: check
     if: github.event_name == 'push'
     permissions:
       contents: write
@@ -62,6 +70,9 @@ jobs:
           curl -sSL https://install.python-poetry.org | python3 - --version 1.4.0
           poetry config virtualenvs.create false
       - run: poetry install --with dev
+      - name: Lint shared docs snippets
+        run: poetry run python scripts/lint_shared_docs.py docs/_shared
+      # mike builds the site, so an invalid holmes-config block fails the deploy.
       # Deploy versioned docs on stable release tags only (skip alpha, beta, rc)
       - name: Deploy versioned docs (release)
         if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref, 'alpha') && !contains(github.ref, 'beta') && !contains(github.ref, 'rc')
