@@ -4,15 +4,23 @@ Custom fence processors for MkDocs documentation.
 Fences available:
 - yaml-toolset-config: Creates 3 tabs (Holmes CLI, Holmes Helm Chart, Robusta Helm Chart) for toolset configurations
 - yaml-helm-values: Creates 2 tabs (Holmes Helm Chart, Robusta Helm Chart) for Helm-only configurations like permissions
+- holmes-config: Renders deployment-neutral Holmes configuration (secrets, toolsets, mcp_servers, models,
+  default_model) as Holmes CLI and Holmes Helm Chart tabs. Blocks are validated against
+  docs/_shared/holmes-config.schema.json.
 - robusta-region: Creates 3 tabs (US, EU, AP) for any text containing api.robusta.dev, platform.robusta.dev, or
   sp.robusta.dev. Plain URLs render as code blocks; markdown links `[text](url)` render as clickable links.
 """
 
 import html
+import json
 import re
 import uuid
+from pathlib import Path
+from typing import Optional
 
 import yaml  # type: ignore
+from jsonschema import Draft202012Validator
+from pymdownx.superfences import SuperFencesException
 
 ROBUSTA_REGIONS = (("US", ""), ("EU", "eu"), ("AP", "ap"))
 ROBUSTA_DOMAIN_RE = re.compile(r"\b(api|platform|sp)\.robusta\.dev\b")
@@ -24,6 +32,285 @@ def _rewrite_robusta_domain(text: str, region_infix: str) -> str:
     if not region_infix:
         return text
     return ROBUSTA_DOMAIN_RE.sub(rf"\1.{region_infix}.robusta.dev", text)
+
+
+# Schema every `holmes-config` block is validated against when the site builds.
+HOLMES_CONFIG_SCHEMA_PATH = (
+    Path(__file__).parent / "_shared" / "holmes-config.schema.json"
+)
+HOLMES_CONFIG_VALIDATOR = Draft202012Validator(
+    json.loads(HOLMES_CONFIG_SCHEMA_PATH.read_text())
+)
+HOLMES_SECRET_NAME = "holmes-secrets"
+HOLMES_NAMESPACE = "holmes"
+TOP_LEVEL_KEY_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):(.*)$")
+
+
+class _IndentedListDumper(yaml.SafeDumper):
+    """Indent list items under their key, as the hand-written examples do."""
+
+    def increase_indent(self, flow=False, indentless=False):
+        return super().increase_indent(flow, False)
+
+
+class HolmesConfigError(SuperFencesException):
+    """An invalid `holmes-config` block. Superfences swallows any other exception
+    from a fence and renders the block as plain code; this one fails the build."""
+
+
+def validate_holmes_config(spec) -> None:
+    """Raise HolmesConfigError when a `holmes-config` block does not match its schema."""
+    errors = sorted(
+        HOLMES_CONFIG_VALIDATOR.iter_errors(spec), key=lambda e: list(e.path)
+    )
+    if isinstance(spec, dict) and "default_model" in spec:
+        if spec["default_model"] not in (spec.get("models") or {}):
+            errors.append(f"default_model {spec['default_model']!r} is not in models")
+    if errors:
+        details = "; ".join(
+            f"{'/'.join(str(p) for p in e.path) or '<root>'}: {e.message}"
+            if not isinstance(e, str)
+            else e
+            for e in errors
+        )
+        raise HolmesConfigError(f"invalid holmes-config block: {details}")
+
+
+def _top_level_sections(source: str) -> dict:
+    """Split the block's YAML text at its top-level keys.
+
+    Rendering slices the author's text instead of re-dumping the parsed data, so
+    comments and key order survive into every tab. Column-0 comments and blank
+    lines go with the key that follows them.
+    """
+    sections: dict = {}
+    current = None
+    pending: list = []
+    for line in source.splitlines():
+        match = TOP_LEVEL_KEY_RE.match(line)
+        if match:
+            current = match.group(1)
+            sections[current] = pending + [line]
+            pending = []
+        elif not line.strip() or line.startswith("#"):
+            pending.append(line)
+        elif current is not None:
+            sections[current].extend(pending + [line])
+            pending = []
+    return {key: "\n".join(lines).strip("\n") for key, lines in sections.items()}
+
+
+def _section_body(section: str) -> Optional[str]:
+    """The indented body of a block-style section, dedented to column 0."""
+    lines = section.split("\n")
+    key_line = next(i for i, ln in enumerate(lines) if TOP_LEVEL_KEY_RE.match(ln))
+    if TOP_LEVEL_KEY_RE.match(lines[key_line]).group(2).split("#")[0].strip():
+        return None  # flow style, e.g. `models: {...}`
+    body = lines[key_line + 1 :]
+    indents = [
+        len(ln) - len(ln.lstrip())
+        for ln in body
+        if ln.strip() and not ln.lstrip().startswith("#")
+    ]
+    base = min(indents, default=0)
+    return "\n".join(ln[base:] if ln.strip() else "" for ln in body).strip("\n")
+
+
+def _rename_section(section: str, old: str, new: str) -> str:
+    return re.sub(rf"^{old}:", f"{new}:", section, count=1, flags=re.MULTILINE)
+
+
+def _secret_key(env_name: str) -> str:
+    return env_name.lower().replace("_", "-")
+
+
+def _secret_value(env_name: str, secret: dict) -> str:
+    return secret.get("example") or f"<{env_name}>"
+
+
+def _cli_steps(spec: dict, sections: dict):
+    secrets = spec.get("secrets") or {}
+    if secrets:
+        yield (
+            "Set the environment variables:",
+            "bash",
+            "\n".join(
+                f'export {name}="{_secret_value(name, s)}"'
+                for name, s in secrets.items()
+            ),
+        )
+    config = [sections[k] for k in ("toolsets", "mcp_servers") if k in sections]
+    if config:
+        yield (
+            "Add the following to <strong>~/.holmes/config.yaml</strong>. "
+            "Create the file if it doesn't exist:",
+            "yaml",
+            "\n\n".join(config),
+        )
+    if "models" in spec:
+        model_list = _section_body(sections["models"])
+        if model_list is None:
+            model_list = yaml.dump(
+                spec["models"], Dumper=_IndentedListDumper, sort_keys=False
+            ).rstrip()
+        yield (
+            "Add the following to <strong>~/.holmes/model_list.yaml</strong>. "
+            "Create the file if it doesn't exist:",
+            "yaml",
+            model_list,
+        )
+    if config:
+        yield (
+            "After making changes to your configuration, run:",
+            "bash",
+            "holmes toolset refresh",
+        )
+    if "models" in spec:
+        model = spec.get("default_model") or next(iter(spec["models"]))
+        yield (
+            "Run Holmes with the model:",
+            "bash",
+            f'holmes ask "what pods are failing?" --model={model}',
+        )
+
+
+def _helm_steps(spec: dict, sections: dict):
+    secrets = spec.get("secrets") or {}
+    env_vars = []
+    if secrets:
+        literals = [
+            f'  --from-literal={_secret_key(name)}="{_secret_value(name, s)}" \\'
+            for name, s in secrets.items()
+        ]
+        yield (
+            "Create a Kubernetes secret:",
+            "bash",
+            "\n".join(
+                [
+                    f"kubectl create secret generic {HOLMES_SECRET_NAME} \\",
+                    *literals,
+                    f"  -n {HOLMES_NAMESPACE}",
+                ]
+            ),
+        )
+        yield (
+            None,
+            "note",
+            "Create the secret in the namespace where Holmes runs "
+            f"(<code>{HOLMES_NAMESPACE}</code> here; change it to match your "
+            "installation). A secret in the wrong namespace silently resolves to an "
+            "empty environment variable, and authentication fails with no clear "
+            "error.",
+        )
+        env_vars = [
+            {
+                "name": name,
+                "valueFrom": {
+                    "secretKeyRef": {
+                        "name": HOLMES_SECRET_NAME,
+                        "key": _secret_key(name),
+                    }
+                },
+            }
+            for name in secrets
+        ]
+    if spec.get("default_model"):
+        # The chart reads no default-model value; Holmes reads $MODEL.
+        env_vars.append({"name": "MODEL", "value": spec["default_model"]})
+    values = []
+    if env_vars:
+        values.append(
+            yaml.dump(
+                {"additionalEnvVars": env_vars},
+                Dumper=_IndentedListDumper,
+                sort_keys=False,
+            ).rstrip()
+        )
+    values += [sections[k] for k in ("toolsets", "mcp_servers") if k in sections]
+    if "models" in sections:
+        values.append(_rename_section(sections["models"], "models", "modelList"))
+    yield (
+        "When using the <strong>standalone Holmes Helm Chart</strong>, update your "
+        "<code>values.yaml</code>:",
+        "yaml",
+        "\n\n".join(values),
+    )
+    yield (
+        "Apply the configuration:",
+        "bash",
+        "helm upgrade --install holmes robusta/holmes -f values.yaml",
+    )
+
+
+def _code_block(md, code: str, lang: str) -> str:
+    """Highlight like a regular fenced block, so tabs match hand-written pages."""
+    return md.preprocessors["fenced_code_block"].highlight(
+        src=code, language=lang, options={}, md=md, classes=[], id_value="", attrs={}
+    )
+
+
+def holmes_config_fence_format(source, language, css_class, options, md, **kwargs):
+    """Render a `holmes-config` block as Holmes CLI and Holmes Helm Chart tabs.
+
+    The block is deployment-neutral Holmes configuration (see
+    `docs/_shared/holmes-config.schema.json`):
+
+        ```holmes-config
+        secrets:        # env vars whose values come from a secret
+          RABBITMQ_PASSWORD:
+            description: Password of the management user
+            example: holmes_password
+        toolsets:       # as in the Holmes config file
+          rabbitmq/core:
+            enabled: true
+            config: ...
+        mcp_servers:    # as in the Holmes config file
+        models:         # a model list
+        default_model:  # a key of models
+        ```
+
+    Every block is validated against the schema; an invalid one fails the build.
+    The fence does not process Jinja2, so `{{ env.VAR }}` stays as-is.
+    """
+    spec = yaml.safe_load(source)
+    validate_holmes_config(spec)
+    sections = _top_level_sections(source)
+    tabs = (
+        ("Holmes CLI", list(_cli_steps(spec, sections))),
+        ("Holmes Helm Chart", list(_helm_steps(spec, sections))),
+    )
+
+    group_name = f"__tabbed_{uuid.uuid4().hex}"
+    inputs_html = ""
+    labels_html = ""
+    blocks_html = ""
+    for index, (label, steps) in enumerate(tabs, start=1):
+        tab_id = f"{group_name}_{index}"
+        checked_attr = ' checked="checked"' if index == 1 else ""
+        inputs_html += (
+            f'<input{checked_attr} id="{tab_id}" name="{group_name}" type="radio">\n'
+        )
+        labels_html += f'<label for="{tab_id}">{label}</label>\n'
+        body = ""
+        for intro, lang, content in steps:
+            if lang == "note":
+                body += (
+                    '<div class="admonition note">\n'
+                    '<p class="admonition-title">'
+                    "Namespace must match Holmes' deployment</p>\n"
+                    f"<p>{content}</p>\n</div>\n"
+                )
+                continue
+            body += f"<p>{intro}</p>\n{_code_block(md, content, lang)}\n"
+        blocks_html += f'<div class="tabbed-block">\n{body}</div>\n'
+
+    return (
+        f'<div class="tabbed-set" data-tabs="1:{len(tabs)}">\n'
+        f"{inputs_html}"
+        f'<div class="tabbed-labels">\n{labels_html}</div>\n'
+        f'<div class="tabbed-content">\n{blocks_html}</div>\n'
+        "</div>"
+    )
 
 
 def toolset_config_fence_format(source, language, css_class, options, md, **kwargs):

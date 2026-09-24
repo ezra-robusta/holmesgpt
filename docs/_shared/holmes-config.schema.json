@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "holmes-config block",
+  "description": "The body of a `holmes-config` fenced block: HolmesGPT configuration for one data source or model provider, independent of how Holmes is deployed. Each docs site renders it for its own deployments. Renderers also check that `default_model`, when set, is a key of `models`.",
+  "type": "object",
+  "additionalProperties": false,
+  "minProperties": 1,
+  "properties": {
+    "secrets": {
+      "description": "Environment variables whose values come from a secret, keyed by variable name. Configuration refers to them as \"{{ env.NAME }}\".",
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Z_][A-Z0-9_]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["description"],
+        "properties": {
+          "description": {
+            "description": "What the value is, in a few words.",
+            "type": "string",
+            "minLength": 1
+          },
+          "example": {
+            "description": "A placeholder or sample value shown in commands.",
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "toolsets": {
+      "description": "Toolsets, as under `toolsets:` in the Holmes configuration file.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "mcp_servers": {
+      "description": "MCP servers, as under `mcp_servers:` in the Holmes configuration file.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "models": {
+      "description": "A model list: model names mapped to their LiteLLM parameters, as in `model_list.yaml`.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["model"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "default_model": {
+      "description": "The key in `models` Holmes uses when no model is requested.",
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "anyOf": [
+    {"required": ["toolsets"]},
+    {"required": ["mcp_servers"]},
+    {"required": ["models"]}
+  ],
+  "dependentRequired": {
+    "default_model": ["models"]
+  }
+}
