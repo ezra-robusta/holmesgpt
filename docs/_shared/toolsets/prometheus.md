@@ -57,33 +57,25 @@ To use a Coralogix PromQL endpoint with HolmesGPT:
 
 1. Go to [Coralogix Documentation](https://coralogix.com/docs/integrations/coralogix-endpoints/#promql) and choose the relevant PromQL endpoint for your region.
 2. In Coralogix, create an API key with permissions to query metrics (Data Flow → API Keys).
-3. Create a Kubernetes secret for the API key and expose it as an environment variable in your Helm values:
+3. Configure the toolset with the API key:
 
-    ```yaml
-    holmes:
-      additionalEnvVars:
-        - name: CORALOGIX_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: coralogix-api-key
-              key: CORALOGIX_API_KEY
-    ```
-
-4. Add the following under your toolsets in the Helm chart:
-
-    ```yaml
-    holmes:
-      toolsets:
-        prometheus/metrics:
-          enabled: true
-          subtype: coralogix
-          config:
-            prometheus_url: "https://prom-api.eu2.coralogix.com"  # Use your region's endpoint
-            additional_headers:
-              token: "{{ env.CORALOGIX_API_KEY }}"
-            discover_metrics_from_last_hours: 72  # Look back 72 hours for metrics
-            tool_calls_return_data: true
-    ```
+```holmes-config
+secrets:
+  CORALOGIX_API_KEY:
+    description: Coralogix API key with permission to query metrics
+    example: <your Coralogix API key>
+secret_name: coralogix-prometheus-api-key
+toolsets:
+  prometheus/metrics:
+    enabled: true
+    subtype: coralogix
+    config:
+      prometheus_url: "https://prom-api.eu2.coralogix.com"  # Use your region's endpoint
+      additional_headers:
+        token: "{{ env.CORALOGIX_API_KEY }}"
+      discover_metrics_from_last_hours: 72  # Look back 72 hours for metrics
+      tool_calls_return_data: true
+```
 
 ---
 
@@ -91,22 +83,21 @@ To use a Coralogix PromQL endpoint with HolmesGPT:
 
 To connect HolmesGPT to AWS Managed Prometheus:
 
-```yaml
-holmes:
-  toolsets:
-    prometheus/metrics:
-      enabled: true
-      subtype: aws-managed-prometheus
-      config:
-        prometheus_url: https://aps-workspaces.us-east-1.amazonaws.com/workspaces/ws-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/
-        aws_region: us-east-1
-        aws_service_name: aps  # Default value, can be omitted
-        # Optional: Specify credentials (otherwise uses default AWS credential chain)
-        aws_access_key: "{{ env.AWS_ACCESS_KEY_ID }}"
-        aws_secret_access_key: "{{ env.AWS_SECRET_ACCESS_KEY }}"
-        # Optional: Assume a role for cross-account access
-        assume_role_arn: "arn:aws:iam::123456789012:role/PrometheusReadRole"
-        refresh_interval_seconds: 900  # Refresh AWS credentials every 15 minutes (default)
+```holmes-config
+toolsets:
+  prometheus/metrics:
+    enabled: true
+    subtype: aws-managed-prometheus
+    config:
+      prometheus_url: https://aps-workspaces.us-east-1.amazonaws.com/workspaces/ws-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/
+      aws_region: us-east-1
+      aws_service_name: aps  # Default value, can be omitted
+      # Optional: Specify credentials (otherwise uses default AWS credential chain)
+      aws_access_key: "{{ env.AWS_ACCESS_KEY_ID }}"
+      aws_secret_access_key: "{{ env.AWS_SECRET_ACCESS_KEY }}"
+      # Optional: Assume a role for cross-account access
+      assume_role_arn: "arn:aws:iam::123456789012:role/PrometheusReadRole"
+      refresh_interval_seconds: 900  # Refresh AWS credentials every 15 minutes (default)
 ```
 
 **Notes:**
@@ -128,15 +119,14 @@ Before configuring Holmes, make sure you have:
 
 To connect HolmesGPT to Google Cloud Managed Prometheus:
 
-```yaml
-holmes:
-  toolsets:
-    prometheus/metrics:
-      enabled: true
-      subtype: google-managed-prometheus
-      config:
-        # Set this to the URL of your Prometheus Frontend endpoint, it may change based on the namespace you deployed frontend to.
-        prometheus_url: http://frontend.default.svc.cluster.local:9090
+```holmes-config
+toolsets:
+  prometheus/metrics:
+    enabled: true
+    subtype: google-managed-prometheus
+    config:
+      # Set this to the URL of your Prometheus Frontend endpoint, it may change based on the namespace you deployed frontend to.
+      prometheus_url: http://frontend.default.svc.cluster.local:9090
 ```
 
 **Notes:**
@@ -154,21 +144,24 @@ Before configuring Holmes, make sure you have:
 
 #### Using a service principal (client secret)
 
-```yaml
-holmes:
-  toolsets:
-    prometheus/metrics:
-      enabled: true
-      subtype: azure-managed-prometheus
-      config:
-        prometheus_url: "https://<your-workspace>.<region>.prometheus.monitor.azure.com:443/"
-  additionalEnvVars:
-    - name: AZURE_CLIENT_ID
-      value: "<your-app-client-id>"
-    - name: AZURE_TENANT_ID
-      value: "<your-tenant-id>"
-    - name: AZURE_CLIENT_SECRET
-      value: "<your-client-secret>"
+```holmes-config
+secrets:
+  AZURE_CLIENT_ID:
+    description: Client ID of the service principal
+    example: <your-app-client-id>
+  AZURE_TENANT_ID:
+    description: Tenant ID of the service principal
+    example: <your-tenant-id>
+  AZURE_CLIENT_SECRET:
+    description: Client secret of the service principal
+    example: <your-client-secret>
+secret_name: azure-managed-prometheus-credentials
+toolsets:
+  prometheus/metrics:
+    enabled: true
+    subtype: azure-managed-prometheus
+    config:
+      prometheus_url: "https://<your-workspace>.<region>.prometheus.monitor.azure.com:443/"
 ```
 
 **Notes:**

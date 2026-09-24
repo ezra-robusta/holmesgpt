@@ -26,6 +26,12 @@ export OVERRIDE_MAX_CONTENT_SIZE="1000000"
 holmes ask "what pods are failing?" --model="bedrock/eu.anthropic.claude-sonnet-4-20250514-v1:0"
 ```
 
+Without a model list, the CLI takes extra headers from the `EXTRA_HEADERS` environment variable:
+
+```bash
+export EXTRA_HEADERS="{\"anthropic-beta\": \"context-1m-2025-08-07\"}"
+```
+
 ## Using IRSA (IAM Roles for Service Accounts)
 
 If you're running HolmesGPT on Kubernetes with IRSA, you can authenticate without static credentials. The AWS SDK picks up the role automatically when the pod's service account is annotated with the role ARN and the following environment variables are injected into the pod:

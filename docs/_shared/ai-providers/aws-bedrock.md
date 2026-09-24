@@ -116,31 +116,21 @@ You can enable various beta features in AWS Bedrock by setting custom headers.
 
 For example, to enable 1M context windows.
 
-You can enable ``Extra Headers`` in both the CLI (via env vars) and the Helm charts options.
+Set `extra_headers` on the model's entry in the model list, as `bedrock-claude-sonnet-4-1M-context` does above:
 
-For the CLI:
-```bash
-export EXTRA_HEADERS="{\"anthropic-beta\": \"context-1m-2025-08-07\"}"
+```yaml
+bedrock-claude-sonnet-4-1M-context:
+  aws_access_key_id: "{{ env.AWS_ACCESS_KEY_ID }}"
+  aws_secret_access_key: "{{ env.AWS_SECRET_ACCESS_KEY }}"
+  aws_region_name: eu-south-2
+  model: bedrock/eu.anthropic.claude-sonnet-4-20250514-v1:0
+  temperature: 1
+  thinking:
+    budget_tokens: 10000
+    type: enabled
+  extra_headers:
+    anthropic-beta: context-1m-2025-08-07
 ```
-
-Or, for Helm:
-
-    # values.yaml
-    holmes:
-      ...
-      modelList:
-        ...
-        bedrock-claude-sonnet-4-1M-context:
-          aws_access_key_id: "{{ env.AWS_ACCESS_KEY_ID }}"
-          aws_secret_access_key: "{{ env.AWS_SECRET_ACCESS_KEY }}"
-          aws_region_name: eu-south-2
-          model: bedrock/eu.anthropic.claude-sonnet-4-20250514-v1:0
-          temperature: 1
-          thinking:
-            budget_tokens: 10000
-            type: enabled
-          extra_headers:
-            anthropic-beta: context-1m-2025-08-07
 
 ## Additional Resources
 
