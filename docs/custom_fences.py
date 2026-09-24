@@ -68,7 +68,7 @@ def validate_holmes_config(spec) -> None:
             HOLMES_CONFIG_VALIDATOR.iter_errors(spec), key=lambda e: list(e.path)
         )
     ]
-    if isinstance(spec, dict) and "default_model" in spec:
+    if isinstance(spec, dict) and isinstance(spec.get("default_model"), str):
         if spec["default_model"] not in (spec.get("models") or {}):
             problems.append(f"default_model {spec['default_model']!r} is not in models")
     if problems:
@@ -266,7 +266,10 @@ def holmes_config_fence_format(source, language, css_class, options, md, **kwarg
     Every block is validated against the schema; an invalid one fails the build.
     The fence does not process Jinja2, so `{{ env.VAR }}` stays as-is.
     """
-    spec = yaml.safe_load(source)
+    try:
+        spec = yaml.safe_load(source)
+    except yaml.YAMLError as e:
+        raise HolmesConfigError(f"invalid holmes-config block: {e}") from e
     validate_holmes_config(spec)
     sections = _top_level_sections(source)
     tabs = (
