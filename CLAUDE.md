@@ -280,7 +280,7 @@ When adding a new toolset or integration, update all of the following pages to k
 1. `README.md` — Data Sources table (add a row with logo, link, status, and description)
 2. `docs/walkthrough/why-holmesgpt.md` — Categorized integration list under "Every Major Observability Platform"
 3. `docs/data-sources/builtin-toolsets/index.md` — Grid cards listing on the toolsets index page
-4. `docs/data-sources/builtin-toolsets/{name}.md` — Dedicated documentation page for the new toolset
+4. `docs/data-sources/builtin-toolsets/{name}.md` — Dedicated documentation page for the new toolset, with its shared content and `holmes-config` block in `docs/_shared/toolsets/{name}.md` (see "Shared Docs Snippets")
 5. Add a logo image to `images/integration_logos/` if one is available
 
 ## Debugging CLI / Rich Live Display Issues
@@ -776,6 +776,14 @@ When asked about content from the HolmesGPT documentation website (https://holme
 - Kubernetes deployment: `docs/installation/kubernetes-installation.md`
 - Toolset documentation: `docs/data-sources/builtin-toolsets/`
 - API reference: `docs/reference/`
+
+## Shared Docs Snippets (`docs/_shared/`)
+
+Data source and model provider pages include their content from `docs/_shared/<area>/<subject>.md` with `--8<--`, and other docs sites include the same files. Edit the snippet, not the page, for anything that is not specific to holmesgpt.dev.
+
+- Snippets must pass `scripts/lint_shared_docs.py`, which enforces a Markdown subset every consuming site renders the same way (its docstring lists it).
+- Put configuration in a `holmes-config` block (schema: `docs/_shared/holmes-config.schema.json`), never in hand-written Holmes CLI / Holmes Helm Chart tabs. Give each page's block its own `secret_name`, so a reader following several pages never creates the same secret twice.
+- Content that applies to one deployment only, or needs MkDocs-only syntax (`multi-instance` fences, `snippets/` includes), goes on the holmesgpt page after the include.
 
 ## MkDocs Navigation
 
