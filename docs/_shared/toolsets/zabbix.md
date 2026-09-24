@@ -28,6 +28,7 @@ secrets:
   ZABBIX_TOKEN:
     description: Zabbix API token
     example: your-zabbix-api-token
+secret_name: zabbix-credentials
 toolsets:
   zabbix:
     type: http

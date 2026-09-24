@@ -13,6 +13,7 @@ secrets:
   BASETEN_API_KEY:
     description: Baseten API key
     example: "..."
+secret_name: baseten-credentials
 models:
   glm-5-3:
     model: baseten/zai-org/GLM-5.3

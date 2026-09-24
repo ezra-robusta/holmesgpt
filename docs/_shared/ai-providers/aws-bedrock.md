@@ -21,6 +21,7 @@ secrets:
   AWS_SECRET_ACCESS_KEY:
     description: AWS secret access key
     example: your-secret-key
+secret_name: bedrock-credentials
 # Configure at least one model
 models:
   bedrock-claude-sonnet-4:

@@ -25,6 +25,7 @@ secrets:
   OPENAI_API_KEY:
     description: API key of your endpoint, or any placeholder if it doesn't need auth
     example: none
+secret_name: openai-compatible-credentials
 models:
   my-model:
     api_key: "{{ env.OPENAI_API_KEY }}"

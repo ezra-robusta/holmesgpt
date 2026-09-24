@@ -25,6 +25,7 @@ secrets:
   MARIADB_URL:
     description: Database connection URL
     example: 'mysql+pymysql://holmes_readonly:your_secure_password@mariadb.example.com:3306/appdb'
+secret_name: mariadb-credentials
 toolsets:
   app-mariadb:
     type: database
@@ -43,6 +44,7 @@ secrets:
   CACHE_MARIADB_URL:
     description: Database connection URL
     example: 'mysql+pymysql://cache_user:pass@cache-mariadb.internal:3306/cache'
+secret_name: mariadb-credentials
 toolsets:
   app-mariadb:
     type: database

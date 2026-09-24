@@ -178,6 +178,7 @@ secrets:
   GRAFANA_API_KEY:
     description: Grafana service account token
     example: glsa_...
+secret_name: grafana-cloud-mcp-credentials
 mcp_servers:
   grafana:
     description: "Grafana observability and dashboards"

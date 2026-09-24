@@ -29,6 +29,7 @@ secrets:
   NOVITA_API_KEY:
     description: Novita API key
     example: your-novita-api-key
+secret_name: novita-credentials
 models:
   deepseek-terminus:
     model: novita/deepseek/deepseek-v3.1-terminus

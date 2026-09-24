@@ -49,6 +49,7 @@ secrets:
   GRAFANA_TEMPO_API_KEY:
     description: Grafana service account token
     example: your-grafana-service-account-token
+secret_name: grafana-tempo-api-key
 toolsets:
   grafana/tempo:
     enabled: true
@@ -99,6 +100,7 @@ secrets:
   GRAFANA_CLOUD_TEMPO_API_KEY:
     description: Grafana Cloud service account token
     example: your-grafana-cloud-service-account-token
+secret_name: grafana-cloud-tempo-api-key
 toolsets:
   grafana/tempo:
     enabled: true

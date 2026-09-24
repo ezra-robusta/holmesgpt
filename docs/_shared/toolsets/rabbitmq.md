@@ -12,6 +12,7 @@ secrets:
   RABBITMQ_PASSWORD:
     description: Password of the RabbitMQ management user
     example: <password>
+secret_name: rabbitmq-credentials
 toolsets:
   rabbitmq/core:
     enabled: true

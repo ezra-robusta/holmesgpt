@@ -11,6 +11,7 @@ secrets:
   ANTHROPIC_API_KEY:
     description: Anthropic API key
     example: sk-ant-...
+secret_name: anthropic-credentials
 # Configure at least one model
 models:
   claude-sonnet-4:

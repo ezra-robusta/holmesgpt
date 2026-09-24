@@ -1,2 +1,2 @@
 !!! note "Namespace must match Holmes' deployment"
-    Create the secret in the same namespace where Holmes runs. The `-n holmes` flag in the **Holmes Helm** tab and `-n default` in the **Robusta Helm** tab match each chart's documented defaults — adjust if you installed Holmes/Robusta into a different namespace. A secret in the wrong namespace silently resolves to an empty env var and authentication will fail with no clear error.
+    Create the secret in the namespace where Holmes runs; run the `kubectl` and `helm` commands in the same namespace, adding the same `-n <namespace>` to each if it is not your current one. If a secret or key that `secretKeyRef` names is missing from that namespace, the Holmes pod does not start and reports `CreateContainerConfigError`.

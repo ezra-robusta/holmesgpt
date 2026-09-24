@@ -9,6 +9,7 @@ secrets:
   SLAB_API_KEY:
     description: Slab API key
     example: <your Slab API key>
+secret_name: slab-credentials
 toolsets:
   slab:
     enabled: true

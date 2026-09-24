@@ -87,6 +87,7 @@ secrets:
   ATLASSIAN_MCP_CONFLUENCE:
     description: Base64 of your Atlassian email and Confluence token
     example: $(printf '%s:%s' '<YOUR_ATLASSIAN_EMAIL>' '<YOUR_CONFLUENCE_TOKEN>' | base64 | tr -d '\n')
+secret_name: atlassian-mcp-credentials
 mcp_servers:
   atlassian-jira:
     description: "Jira issues via the Atlassian Rovo MCP server"

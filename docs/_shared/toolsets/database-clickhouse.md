@@ -30,6 +30,7 @@ secrets:
   CLICKHOUSE_URL:
     description: Database connection URL
     example: 'clickhouse://holmes_readonly:your_secure_password@clickhouse.example.com:9000/metrics'
+secret_name: clickhouse-credentials
 toolsets:
   clickhouse-analytics:
     type: database
@@ -48,6 +49,7 @@ secrets:
   CLICKHOUSE_LOGS_URL:
     description: Database connection URL
     example: 'clickhouse+http://log_reader:pass@clickhouse-logs.internal:8123/logs'
+secret_name: clickhouse-credentials
 toolsets:
   clickhouse-analytics:
     type: database

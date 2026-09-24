@@ -63,6 +63,7 @@ secrets:
   SPLUNK_MCP_TOKEN:
     description: Splunk token generated in Prerequisites Step 4
     example: <YOUR_TOKEN>
+secret_name: splunk-mcp-token
 mcp_servers:
   splunk:
     description: "Splunk MCP server for log analysis and investigation"

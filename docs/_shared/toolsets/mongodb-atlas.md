@@ -21,6 +21,7 @@ secrets:
   MONGODB_ATLAS_PRIVATE_KEY:
     description: MongoDB Atlas private API key
     example: <your-private-api-key>
+secret_name: mongodb-atlas-credentials
 toolsets:
   MongoDBAtlas:
     enabled: true

@@ -31,6 +31,7 @@ secrets:
   CONFLUENCE_API_KEY:
     description: Confluence API token
     example: your-api-token
+secret_name: confluence-credentials
 toolsets:
   confluence:
     enabled: true
@@ -58,6 +59,7 @@ secrets:
   CONFLUENCE_PAT:
     description: Confluence personal access token
     example: your-personal-access-token
+secret_name: confluence-credentials
 toolsets:
   confluence:
     enabled: true
@@ -76,6 +78,7 @@ secrets:
   CONFLUENCE_PASSWORD:
     description: Confluence password
     example: your-password
+secret_name: confluence-credentials
 toolsets:
   confluence:
     enabled: true

@@ -15,6 +15,7 @@ secrets:
   GRAFANA_API_KEY:
     description: Grafana service account token
     example: your-grafana-service-account-token
+secret_name: grafana-api-key
 toolsets:
   grafana/dashboards:
     enabled: true

@@ -11,6 +11,7 @@ secrets:
   OPENROUTER_API_KEY:
     description: OpenRouter API key
     example: sk-or-...
+secret_name: openrouter-credentials
 # Configure at least one model
 models:
   claude-sonnet-4:
@@ -47,6 +48,7 @@ secrets:
   OPENAI_API_KEY:
     description: OpenRouter API key
     example: sk-or-...
+secret_name: openrouter-openai-credentials
 # Configure at least one model
 models:
   claude-sonnet-4:

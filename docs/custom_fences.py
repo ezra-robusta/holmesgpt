@@ -3,7 +3,7 @@ Custom fence processors for MkDocs documentation.
 
 Fences available:
 - holmes-config: Renders deployment-neutral Holmes configuration (secrets, toolsets, mcp_servers, models,
-  default_model) as Holmes CLI and Holmes Helm Chart tabs. Blocks are validated against
+  default_model, secret_name) as Holmes CLI and Holmes Helm Chart tabs. Blocks are validated against
   docs/_shared/holmes-config.schema.json.
 - robusta-region: Creates 3 tabs (US, EU, AP) for any text containing api.robusta.dev, platform.robusta.dev, or
   sp.robusta.dev. Plain URLs render as code blocks; markdown links `[text](url)` render as clickable links.
@@ -16,6 +16,7 @@ import uuid
 from pathlib import Path
 from typing import Optional
 
+import markdown
 import yaml  # type: ignore
 from jsonschema import Draft202012Validator
 from pymdownx.superfences import SuperFencesException
@@ -38,8 +39,12 @@ HOLMES_CONFIG_SCHEMA_PATH = (
 HOLMES_CONFIG_VALIDATOR = Draft202012Validator(
     json.loads(HOLMES_CONFIG_SCHEMA_PATH.read_text())
 )
-HOLMES_SECRET_NAME = "holmes-secrets"
-HOLMES_NAMESPACE = "holmes"
+# The release name and chart of the Helm installation guide, so the rendered
+# command upgrades the release the reader installed.
+HOLMES_HELM_UPGRADE = "helm upgrade holmesgpt robusta/holmes -f values.yaml"
+SECRET_NAMESPACE_NOTE_PATH = (
+    Path(__file__).parent / "snippets" / "secret_namespace_note.md"
+)
 TOP_LEVEL_KEY_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):(.*)$")
 
 
@@ -190,37 +195,25 @@ def _helm_steps(spec: dict, sections: dict, md):
     secrets = spec.get("secrets") or {}
     env_vars = []
     if secrets:
-        literals = [
-            f"  --from-literal={_secret_key(name)}={_shell_quoted_example(name, s)} \\"
+        command = [f"kubectl create secret generic {spec['secret_name']}"] + [
+            f"  --from-literal={_secret_key(name)}={_shell_quoted_example(name, s)}"
             for name, s in secrets.items()
         ]
         yield _code_step(
-            md,
-            "Create a Kubernetes secret:",
-            "bash",
-            "\n".join(
-                [
-                    f"kubectl create secret generic {HOLMES_SECRET_NAME} \\",
-                    *literals,
-                    f"  -n {HOLMES_NAMESPACE}",
-                ]
-            ),
+            md, "Create a Kubernetes secret:", "bash", " \\\n".join(command)
         )
         yield (
-            '<div class="admonition note">\n'
-            '<p class="admonition-title">Namespace must match Holmes\' deployment</p>\n'
-            "<p>Create the secret in the namespace where Holmes runs "
-            f"(<code>{HOLMES_NAMESPACE}</code> here; change it to match your "
-            "installation). A secret in the wrong namespace silently resolves to an "
-            "empty environment variable, and authentication fails with no clear "
-            "error.</p>\n</div>\n"
+            markdown.markdown(
+                SECRET_NAMESPACE_NOTE_PATH.read_text(), extensions=["admonition"]
+            )
+            + "\n"
         )
         env_vars = [
             {
                 "name": name,
                 "valueFrom": {
                     "secretKeyRef": {
-                        "name": HOLMES_SECRET_NAME,
+                        "name": spec["secret_name"],
                         "key": _secret_key(name),
                     }
                 },
@@ -245,7 +238,7 @@ def _helm_steps(spec: dict, sections: dict, md):
         md,
         "Apply the configuration:",
         "bash",
-        "helm upgrade --install holmes robusta/holmes -f values.yaml",
+        HOLMES_HELM_UPGRADE,
     )
 
 
@@ -260,6 +253,7 @@ def holmes_config_fence_format(source, language, css_class, options, md, **kwarg
           RABBITMQ_PASSWORD:
             description: Password of the management user
             example: holmes_password
+        secret_name: rabbitmq-credentials  # the Kubernetes secret holding them
         toolsets:       # as in the Holmes config file
           rabbitmq/core:
             enabled: true

@@ -32,6 +32,7 @@ secrets:
   POSTGRES_URL:
     description: Database connection URL
     example: 'postgresql://holmes_readonly:your_secure_password@postgres.example.com:5432/mydb'
+secret_name: postgres-credentials
 toolsets:
   prod-postgres:
     type: database
@@ -50,6 +51,7 @@ secrets:
   ANALYTICS_POSTGRES_URL:
     description: Database connection URL
     example: 'postgresql://analyst:pass@analytics-pg.internal:5432/analytics'
+secret_name: postgres-credentials
 toolsets:
   prod-postgres:
     type: database

@@ -17,6 +17,7 @@ secrets:
   GITHUB_API_KEY:
     description: GitHub personal access token with the Models permission
     example: your-github-token
+secret_name: github-models-credentials
 models:
   gpt-4-1:
     api_key: "{{ env.GITHUB_API_KEY }}"

@@ -35,8 +35,7 @@ For Elasticsearch clusters that require client certificate authentication (commo
     ```bash
     kubectl create secret generic elasticsearch-client-certs \
       --from-file=tls.crt=/path/to/client.crt \
-      --from-file=tls.key=/path/to/client.key \
-      -n holmes
+      --from-file=tls.key=/path/to/client.key
     ```
 
     --8<-- "snippets/secret_namespace_note.md"

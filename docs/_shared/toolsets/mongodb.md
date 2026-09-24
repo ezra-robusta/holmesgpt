@@ -25,6 +25,7 @@ secrets:
   MONGO_URL:
     description: MongoDB connection URL
     example: 'mongodb://holmes_readonly:your_secure_password@mongo.example.com:27017/mydb'
+secret_name: mongodb-credentials
 toolsets:
   prod-mongo:
     type: mongodb
@@ -43,6 +44,7 @@ secrets:
   ANALYTICS_MONGO_URL:
     description: Connection URL of the analytics MongoDB
     example: <analytics MongoDB connection URL>
+secret_name: mongodb-credentials
 toolsets:
   prod-mongo:
     type: mongodb

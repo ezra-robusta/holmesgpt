@@ -15,6 +15,7 @@ secrets:
   OPENAI_API_KEY:
     description: OpenAI API key
     example: sk-...
+secret_name: openai-credentials
 # Configure at least one model
 models:
   gpt-4.1:

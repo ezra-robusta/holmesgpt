@@ -17,6 +17,7 @@ secrets:
   OLLAMA_API_BASE:
     description: URL of your Ollama server
     example: http://localhost:11434
+secret_name: ollama-credentials
 # Configure at least one model
 models:
   ollama-llama3:
@@ -43,6 +44,7 @@ secrets:
   OPENAI_API_KEY:
     description: Bearer token, or any value if Ollama doesn't require one
     example: dummy-key
+secret_name: ollama-openai-credentials
 models:
   ollama-alt:
     api_base: "{{ env.OPENAI_API_BASE }}"

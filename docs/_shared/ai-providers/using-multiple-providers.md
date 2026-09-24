@@ -20,6 +20,7 @@ secrets:
   OPENAI_API_KEY:
     description: OpenAI API key
     example: sk-...
+secret_name: holmes-secrets
 # Configure the model list using the environment variables
 models:
   # Standard OpenAI

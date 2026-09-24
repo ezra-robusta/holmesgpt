@@ -31,6 +31,7 @@ secrets:
   VICTORIALOGS_PASSWORD:
     description: Password of the VictoriaLogs user
     example: <password>
+secret_name: victorialogs-credentials
 toolsets:
   victorialogs:
     enabled: true
@@ -47,6 +48,7 @@ secrets:
   VICTORIALOGS_TOKEN:
     description: VictoriaLogs bearer token
     example: <token>
+secret_name: victorialogs-credentials
 toolsets:
   victorialogs:
     enabled: true

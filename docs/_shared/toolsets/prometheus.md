@@ -198,6 +198,7 @@ secrets:
   GRAFANA_CLOUD_PROM_AUTH:
     description: Authorization header with your base64-encoded instance ID and access policy token
     example: Basic $(echo -n 'INSTANCE_ID:CLOUD_ACCESS_POLICY_TOKEN' | base64)
+secret_name: grafana-cloud-prometheus
 toolsets:
   prometheus/metrics:
     enabled: true
@@ -231,6 +232,7 @@ secrets:
   GRAFANA_CLOUD_SA_TOKEN:
     description: Grafana Cloud service account token
     example: YOUR_GLSA_TOKEN
+secret_name: grafana-cloud-sa-token
 toolsets:
   prometheus/metrics:
     enabled: true

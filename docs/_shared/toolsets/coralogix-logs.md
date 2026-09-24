@@ -19,6 +19,7 @@ secrets:
   CORALOGIX_API_KEY:
     description: Coralogix API key
     example: your-coralogix-api-key
+secret_name: coralogix-api-key
 toolsets:
   coralogix:
     enabled: true

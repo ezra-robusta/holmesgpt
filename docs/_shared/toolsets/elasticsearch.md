@@ -20,6 +20,7 @@ secrets:
   ELASTICSEARCH_API_KEY:
     description: Elasticsearch API key
     example: your-api-key
+secret_name: elasticsearch-credentials
 toolsets:
   elasticsearch/data:
     enabled: true

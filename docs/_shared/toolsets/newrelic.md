@@ -27,6 +27,7 @@ secrets:
   NEW_RELIC_API_KEY:
     description: New Relic User API key
     example: your-new-relic-user-api-key
+secret_name: newrelic-credentials
 toolsets:
   newrelic:
     enabled: true

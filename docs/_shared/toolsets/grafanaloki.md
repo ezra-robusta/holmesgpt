@@ -45,6 +45,7 @@ secrets:
   GRAFANA_API_KEY:
     description: Grafana service account token
     example: <your grafana API key>
+secret_name: grafana-loki-credentials
 toolsets:
   grafana/loki:
     enabled: true
@@ -91,6 +92,7 @@ secrets:
   GRAFANA_API_KEY:
     description: Grafana Cloud service account token
     example: <grafana cloud service account token>
+secret_name: grafana-cloud-loki-credentials
 toolsets:
   grafana/loki:
     enabled: true
@@ -119,11 +121,9 @@ toolsets:
 
 Only applies to the **Self-Hosted Loki via Grafana Proxy** setup. If HolmesGPT reaches Grafana through an internal URL but you want the clickable "View in Grafana" links in responses to use a public URL:
 
+Uses the `GRAFANA_API_KEY` secret from the [Self-Hosted Loki via Grafana Proxy](https://holmesgpt.dev/data-sources/builtin-toolsets/grafanaloki/#self-hosted-loki-via-grafana-proxy) setup.
+
 ```holmes-config
-secrets:
-  GRAFANA_API_KEY:
-    description: Grafana service account token
-    example: <your grafana API key>
 toolsets:
   grafana/loki:
     enabled: true

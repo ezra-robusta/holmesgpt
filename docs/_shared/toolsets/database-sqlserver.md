@@ -32,6 +32,7 @@ secrets:
   SQLSERVER_URL:
     description: Database connection URL
     example: 'mssql+pytds://holmes_readonly:Your_Secure_Password123!@sqlserver.example.com:1433/mydb'
+secret_name: sqlserver-credentials
 toolsets:
   sqlserver-prod:
     type: database
@@ -50,6 +51,7 @@ secrets:
   ANALYTICS_SQLSERVER_URL:
     description: Database connection URL
     example: 'mssql+pytds://analyst:pass@analytics-sql.internal:1433/analytics'
+secret_name: sqlserver-credentials
 toolsets:
   sqlserver-prod:
     type: database

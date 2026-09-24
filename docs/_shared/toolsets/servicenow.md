@@ -78,6 +78,7 @@ secrets:
   SERVICENOW_API_KEY:
     description: ServiceNow API key
     example: your-servicenow-api-key
+secret_name: servicenow-credentials
 toolsets:
   servicenow/tables:
     enabled: true

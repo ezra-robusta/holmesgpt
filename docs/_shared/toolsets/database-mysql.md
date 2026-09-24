@@ -35,6 +35,7 @@ secrets:
   MYSQL_URL:
     description: Database connection URL
     example: 'mysql+pymysql://holmes_readonly:your_secure_password@mysql.example.com:3306/orders'
+secret_name: mysql-credentials
 toolsets:
   orders-mysql:
     type: database
@@ -53,6 +54,7 @@ secrets:
   ANALYTICS_MYSQL_URL:
     description: Database connection URL
     example: 'mysql+pymysql://analyst:pass@analytics-mysql.internal:3306/analytics'
+secret_name: mysql-credentials
 toolsets:
   orders-mysql:
     type: database

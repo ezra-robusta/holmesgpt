@@ -28,6 +28,7 @@ secrets:
   NOTION_AUTH:
     description: Notion internal integration secret
     example: <your Notion integration secret>
+secret_name: notion-credentials
 toolsets:
   notion:
     enabled: true

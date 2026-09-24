@@ -14,6 +14,7 @@ secrets:
   KAFKA_PASSWORD:
     description: Kafka password
     example: <your-password>
+secret_name: kafka-credentials
 toolsets:
   kafka/admin:
     enabled: true
@@ -42,6 +43,7 @@ secrets:
   KAFKA_CLIENT_KEY_BASE64:
     description: Base64-encoded client key
     example: $(base64 < /path/to/client.key | tr -d '\n')
+secret_name: kafka-tls-certs
 toolsets:
   kafka/admin:
     enabled: true

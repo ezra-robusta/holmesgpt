@@ -46,6 +46,7 @@ secrets:
   JENKINS_AUTH_TOKEN:
     description: Base64 of your Jenkins username:api_token
     example: $(echo -n "username:api_token" | base64)
+secret_name: jenkins-credentials
 mcp_servers:
   jenkins:
     description: "Jenkins CI/CD server"

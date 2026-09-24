@@ -27,6 +27,7 @@ secrets:
   DATADOG_APP_KEY:
     description: Datadog application key
     example: your-datadog-app-key
+secret_name: holmes-datadog-secrets
 toolsets:
   # Enable all Datadog toolsets
   datadog/logs:

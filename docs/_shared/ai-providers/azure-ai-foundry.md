@@ -20,6 +20,7 @@ secrets:
   AZURE_API_KEY:
     description: Azure AI Foundry API key
     example: your-azure-api-key
+secret_name: azure-ai-foundry-credentials
 # Configure at least one model
 models:
   # Anthropic model on Azure AI Foundry (recommended)

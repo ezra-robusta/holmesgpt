@@ -49,8 +49,7 @@ Use this approach when certificates are mounted into the Holmes pod as Kubernete
     kubectl create secret generic kafka-tls-certs \
       --from-file=ca.crt=/path/to/ca.crt \
       --from-file=client.pem=/path/to/client.pem \
-      --from-file=client.key=/path/to/client.key \
-      -n holmes
+      --from-file=client.key=/path/to/client.key
     ```
 
     --8<-- "snippets/secret_namespace_note.md"
@@ -89,12 +88,12 @@ Use this approach when certificates are mounted into the Holmes pod as Kubernete
         valueFrom:
           secretKeyRef:
             name: kafka-credentials
-            key: username
+            key: kafka-username
       - name: KAFKA_PASSWORD
         valueFrom:
           secretKeyRef:
             name: kafka-credentials
-            key: password
+            key: kafka-password
 
     additionalVolumes:
       - name: kafka-tls
@@ -122,7 +121,11 @@ Use this approach when certificates are mounted into the Holmes pod as Kubernete
               ssl_client_key_path: /etc/kafka-tls/client.key
     ```
 
-    --8<-- "snippets/helm_upgrade_command.md"
+    Apply the configuration:
+
+    ```bash
+    helm upgrade holmesgpt robusta/holmes -f values.yaml
+    ```
 
 ## Capabilities
 
