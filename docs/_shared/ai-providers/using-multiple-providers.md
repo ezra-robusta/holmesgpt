@@ -2,8 +2,9 @@ Define multiple model configurations and switch between them by name. This is us
 
 ## Configuration
 
+Only include the providers you're using.
+
 ```holmes-config
-# Only include the providers you're using
 secrets:
   AZURE_API_KEY:
     description: Azure API key
@@ -20,7 +21,7 @@ secrets:
   OPENAI_API_KEY:
     description: OpenAI API key
     example: sk-...
-secret_name: holmes-secrets
+secret_name: multiple-providers-credentials
 # Configure the model list using the environment variables
 models:
   # Standard OpenAI

@@ -34,7 +34,7 @@ toolsets:
     llm_instructions: "Application database with user and session data"
 ```
 
-**Multiple instances:**
+**Multiple instances**, instead of the block above:
 
 ```holmes-config
 secrets:

@@ -41,7 +41,7 @@ toolsets:
     llm_instructions: "Production SQL Server database with application data"
 ```
 
-**Multiple instances:**
+**Multiple instances**, instead of the block above:
 
 ```holmes-config
 secrets:

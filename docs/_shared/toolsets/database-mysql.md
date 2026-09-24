@@ -44,7 +44,7 @@ toolsets:
     llm_instructions: "Orders database with customer and product data"
 ```
 
-**Multiple instances:**
+**Multiple instances**, instead of the block above:
 
 ```holmes-config
 secrets:

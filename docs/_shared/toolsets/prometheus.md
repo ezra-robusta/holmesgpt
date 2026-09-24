@@ -93,8 +93,8 @@ toolsets:
       aws_region: us-east-1
       aws_service_name: aps  # Default value, can be omitted
       # Optional: Specify credentials (otherwise uses default AWS credential chain)
-      aws_access_key: "{{ env.AWS_ACCESS_KEY_ID }}"
-      aws_secret_access_key: "{{ env.AWS_SECRET_ACCESS_KEY }}"
+      # aws_access_key: "{{ env.AWS_ACCESS_KEY_ID }}"
+      # aws_secret_access_key: "{{ env.AWS_SECRET_ACCESS_KEY }}"
       # Optional: Assume a role for cross-account access
       assume_role_arn: "arn:aws:iam::123456789012:role/PrometheusReadRole"
       refresh_interval_seconds: 900  # Refresh AWS credentials every 15 minutes (default)

@@ -53,7 +53,14 @@ holmes ask "what pods are failing?" --model="gpt-5"
 
 When using GPT-5 models, you can control the reasoning effort level. This allows you to balance between response quality and processing time/cost.
 
+This model list replaces the one in [Configuration](https://holmesgpt.dev/ai-providers/openai/#configuration).
+
 ```holmes-config
+secrets:
+  OPENAI_API_KEY:
+    description: OpenAI API key
+    example: sk-...
+secret_name: openai-credentials
 models:
   gpt-5-minimal:
     api_key: "{{ env.OPENAI_API_KEY }}"

@@ -18,8 +18,7 @@ Enabling this toolset allows HolmesGPT to fetch pages from Notion, making it use
 3. **Configure Authentication**
 
     - Retrieve the **Internal Integration Secret** from Notion.
-    - Create a Kubernetes secret in your cluster with this key.
-    - Configure the `NOTION_AUTH` environment variable.
+    - Keep it: the configuration below reads it from the `NOTION_AUTH` environment variable.
 
 ## Configuration
 

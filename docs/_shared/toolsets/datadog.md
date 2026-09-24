@@ -93,7 +93,17 @@ Query and analyze logs from Datadog, including historical data from terminated p
 
 **Configuration**
 
+This block configures the toolset on its own, in place of the Quick Start block. To enable several toolsets with these options, put their `toolsets` entries in one configuration.
+
 ```holmes-config
+secrets:
+  DATADOG_API_KEY:
+    description: Datadog API key
+    example: your-datadog-api-key
+  DATADOG_APP_KEY:
+    description: Datadog application key
+    example: your-datadog-app-key
+secret_name: holmes-datadog-secrets
 toolsets:
   datadog/logs:
     enabled: true
@@ -136,7 +146,17 @@ Access and analyze metrics from your infrastructure and applications.
 
 **Configuration**
 
+This block configures the toolset on its own, in place of the Quick Start block. To enable several toolsets with these options, put their `toolsets` entries in one configuration.
+
 ```holmes-config
+secrets:
+  DATADOG_API_KEY:
+    description: Datadog API key
+    example: your-datadog-api-key
+  DATADOG_APP_KEY:
+    description: Datadog application key
+    example: your-datadog-app-key
+secret_name: holmes-datadog-secrets
 toolsets:
   datadog/metrics:
     enabled: true
@@ -178,7 +198,17 @@ Analyze distributed traces to identify performance bottlenecks and latency issue
 
 **Configuration**
 
+This block configures the toolset on its own, in place of the Quick Start block. To enable several toolsets with these options, put their `toolsets` entries in one configuration.
+
 ```holmes-config
+secrets:
+  DATADOG_API_KEY:
+    description: Datadog API key
+    example: your-datadog-api-key
+  DATADOG_APP_KEY:
+    description: Datadog application key
+    example: your-datadog-app-key
+secret_name: holmes-datadog-secrets
 toolsets:
   datadog/traces:
     enabled: true
@@ -215,7 +245,17 @@ Access general-purpose Datadog API endpoints for read-only operations including 
 
 **Configuration**
 
+This block configures the toolset on its own, in place of the Quick Start block. To enable several toolsets with these options, put their `toolsets` entries in one configuration.
+
 ```holmes-config
+secrets:
+  DATADOG_API_KEY:
+    description: Datadog API key
+    example: your-datadog-api-key
+  DATADOG_APP_KEY:
+    description: Datadog application key
+    example: your-datadog-app-key
+secret_name: holmes-datadog-secrets
 toolsets:
   datadog/general:
     enabled: true

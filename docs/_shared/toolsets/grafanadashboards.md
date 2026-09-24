@@ -39,9 +39,14 @@ The LLM controls all rendering parameters — time range, dimensions, theme, tim
 
 Rendering is **disabled by default**. To enable it, add `enable_rendering: true` to your config:
 
-Uses the `GRAFANA_API_KEY` secret from the [Configuration](https://holmesgpt.dev/data-sources/builtin-toolsets/grafanadashboards/#configuration) section above.
+Use this block instead of the one in [Configuration](https://holmesgpt.dev/data-sources/builtin-toolsets/grafanadashboards/#configuration).
 
 ```holmes-config
+secrets:
+  GRAFANA_API_KEY:
+    description: Grafana service account token
+    example: your-grafana-service-account-token
+secret_name: grafana-api-key
 toolsets:
   grafana/dashboards:
     enabled: true
@@ -59,9 +64,14 @@ When rendering a full dashboard, HolmesGPT captures the entire page (all rows) s
 
 For self-signed certificates, you can disable SSL verification:
 
-Uses the `GRAFANA_API_KEY` secret from the [Configuration](https://holmesgpt.dev/data-sources/builtin-toolsets/grafanadashboards/#configuration) section above.
+Use this block instead of the one in [Configuration](https://holmesgpt.dev/data-sources/builtin-toolsets/grafanadashboards/#configuration).
 
 ```holmes-config
+secrets:
+  GRAFANA_API_KEY:
+    description: Grafana service account token
+    example: your-grafana-service-account-token
+secret_name: grafana-api-key
 toolsets:
   grafana/dashboards:
     enabled: true
@@ -75,9 +85,14 @@ toolsets:
 
 If HolmesGPT accesses Grafana through an internal URL but you want clickable links in results to use a different URL:
 
-Uses the `GRAFANA_API_KEY` secret from the [Configuration](https://holmesgpt.dev/data-sources/builtin-toolsets/grafanadashboards/#configuration) section above.
+Use this block instead of the one in [Configuration](https://holmesgpt.dev/data-sources/builtin-toolsets/grafanadashboards/#configuration).
 
 ```holmes-config
+secrets:
+  GRAFANA_API_KEY:
+    description: Grafana service account token
+    example: your-grafana-service-account-token
+secret_name: grafana-api-key
 toolsets:
   grafana/dashboards:
     enabled: true

@@ -39,7 +39,7 @@ toolsets:
     llm_instructions: "ClickHouse analytics warehouse with event streams and metrics"
 ```
 
-**Multiple instances:**
+**Multiple instances**, instead of the block above:
 
 ```holmes-config
 secrets:

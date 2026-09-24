@@ -34,7 +34,7 @@ toolsets:
     llm_instructions: "Production MongoDB database"
 ```
 
-**Multiple instances:**
+**Multiple instances**, instead of the block above:
 
 ```holmes-config
 secrets:

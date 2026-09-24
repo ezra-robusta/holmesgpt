@@ -45,11 +45,16 @@ Centralized logging gives Holmes access to historical logs, cross-service log co
 **Quick example** (Loki via Grafana):
 
 ```holmes-config
+secrets:
+  GRAFANA_API_KEY:
+    description: Grafana service account token
+    example: <your-grafana-token>
+secret_name: loki-quick-example-credentials
 toolsets:
   grafana/loki:
     enabled: true
     config:
-      api_key: <your-grafana-token>
+      api_key: "{{ env.GRAFANA_API_KEY }}"
       api_url: https://your-grafana.net
       grafana_datasource_uid: <loki-datasource-uid>
 ```

@@ -22,7 +22,7 @@ toolsets:
 
 ### Authentication
 
-VictoriaLogs supports basic authentication and bearer tokens.
+VictoriaLogs supports basic authentication and bearer tokens. Use one of these blocks:
 
 **Basic auth:**
 
