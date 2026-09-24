@@ -5,10 +5,39 @@ on:
       - master
     tags:
       - '[0-9]*.[0-9]*.[0-9]*'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'scripts/lint_shared_docs.py'
+      - '.github/workflows/build-and-deploy-docs.yaml'
 permissions:
-  contents: write
+  contents: read
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 - --version 1.4.0
+          poetry config virtualenvs.create false
+      - run: poetry install --with dev
+      # Shared snippets are rendered by other sites too, so they must stay in
+      # the portable Markdown subset (see the script's docstring).
+      - name: Lint shared docs snippets
+        run: poetry run python scripts/lint_shared_docs.py docs/_shared
+      # Fails on an invalid holmes-config block or a missing snippet include.
+      - name: Build docs
+        run: poetry run mkdocs build
   deploy:
+    needs: check
+    if: github.event_name == 'push'
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
