@@ -1,0 +1,97 @@
+Connect HolmesGPT to MariaDB databases to analyze query performance, investigate slow queries, check replication status, examine database health, and read data for troubleshooting.
+
+You can configure multiple MariaDB instances with different names (e.g., `app-mariadb`, `cache-mariadb`, `staging-mariadb`).
+
+## Creating a Read-Only User
+
+```sql
+-- Create user
+CREATE USER 'holmes_readonly'@'%' IDENTIFIED BY 'your_secure_password';
+
+-- Grant read-only permissions
+GRANT SELECT, SHOW VIEW, PROCESS, REPLICATION CLIENT ON *.* TO 'holmes_readonly'@'%';
+
+-- Grant access to performance and information schemas
+GRANT SELECT ON performance_schema.* TO 'holmes_readonly'@'%';
+GRANT SELECT ON information_schema.* TO 'holmes_readonly'@'%';
+
+FLUSH PRIVILEGES;
+```
+
+## Configuration
+
+```holmes-config
+secrets:
+  MARIADB_URL:
+    description: Database connection URL
+    example: 'mysql+pymysql://holmes_readonly:your_secure_password@mariadb.example.com:3306/appdb'
+toolsets:
+  app-mariadb:
+    type: database
+    config:
+      connection_url: "{{ env.MARIADB_URL }}"
+    llm_instructions: "Application database with user and session data"
+```
+
+**Multiple instances:**
+
+```holmes-config
+secrets:
+  APP_MARIADB_URL:
+    description: Database connection URL
+    example: 'mysql+pymysql://holmes_readonly:your_secure_password@mariadb.example.com:3306/appdb'
+  CACHE_MARIADB_URL:
+    description: Database connection URL
+    example: 'mysql+pymysql://cache_user:pass@cache-mariadb.internal:3306/cache'
+toolsets:
+  app-mariadb:
+    type: database
+    config:
+      connection_url: "{{ env.APP_MARIADB_URL }}"
+    llm_instructions: "Application database with user and session data"
+
+  cache-mariadb:
+    type: database
+    config:
+      connection_url: "{{ env.CACHE_MARIADB_URL }}"
+    llm_instructions: "Cache database for session storage"
+```
+
+**Connection URL format:**
+```
+mysql+pymysql://[username]:[password]@[host]:[port]/[database]
+```
+
+Note: MariaDB uses MySQL wire protocol, so use `mysql+pymysql://` in the connection URL.
+
+## Configuration Options
+
+- **connection_url** (required): MariaDB connection URL
+- **read_only** (default: `true`): Only allow SELECT/SHOW/DESCRIBE/EXPLAIN/WITH statements
+- **verify_ssl** (default: `true`): Verify SSL certificates
+- **max_rows** (default: `200`): Maximum rows to return (1-10000)
+- **llm_instructions**: Context about this database
+
+## Common Use Cases
+
+```
+"Analyze query performance: SELECT * FROM users WHERE last_login > NOW() - INTERVAL 30 DAY"
+```
+
+```
+"Show replication status and lag"
+```
+
+```
+"List tables by size"
+```
+
+## Migrating from the MariaDB MCP addon
+
+Earlier versions shipped a separate MariaDB MCP server, enabled through
+`mcpAddons.mariadb` in the Helm chart. That addon has been removed and the chart no
+longer renders it, so leaving the old value in place gives you no MariaDB access at all.
+
+To migrate, remove the `mcpAddons.mariadb` block from your Helm values and configure
+this data source with your connection URL as shown above. The MCP server's read-only
+mode is replaced by the `read_only` option, which defaults to `true`.

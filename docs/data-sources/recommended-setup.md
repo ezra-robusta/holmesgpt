@@ -23,7 +23,7 @@ Connect whichever metrics platform you already use:
 
 **Quick example** (Prometheus):
 
-```yaml-toolset-config
+```holmes-config
 toolsets:
   prometheus/metrics:
     enabled: true
@@ -44,7 +44,7 @@ Centralized logging gives Holmes access to historical logs, cross-service log co
 
 **Quick example** (Loki via Grafana):
 
-```yaml-toolset-config
+```holmes-config
 toolsets:
   grafana/loki:
     enabled: true
