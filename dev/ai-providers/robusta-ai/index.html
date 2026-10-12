@@ -6049,13 +6049,13 @@
 <h3 id="selecting-a-region">Selecting a Region<a class="headerlink" href="#selecting-a-region" title="Permanent link">&para;</a></h3>
 <p>The Robusta platform is hosted in multiple regions. HolmesGPT defaults to the US endpoint. If your Robusta account lives in the EU or AP region, set <code>ROBUSTA_API_ENDPOINT</code> to the matching API URL — pick your region below:</p>
 <div class="tabbed-set" data-tabs="1:3">
-<input checked="checked" id="__tabbed_849b7453_5123_428e_88a8_9b598e9543bf_1" name="__tabbed_849b7453_5123_428e_88a8_9b598e9543bf" type="radio">
-<input id="__tabbed_849b7453_5123_428e_88a8_9b598e9543bf_2" name="__tabbed_849b7453_5123_428e_88a8_9b598e9543bf" type="radio">
-<input id="__tabbed_849b7453_5123_428e_88a8_9b598e9543bf_3" name="__tabbed_849b7453_5123_428e_88a8_9b598e9543bf" type="radio">
+<input checked="checked" id="__tabbed_418541db_3a87_4c98_99b7_7c6efa40894b_1" name="__tabbed_418541db_3a87_4c98_99b7_7c6efa40894b" type="radio">
+<input id="__tabbed_418541db_3a87_4c98_99b7_7c6efa40894b_2" name="__tabbed_418541db_3a87_4c98_99b7_7c6efa40894b" type="radio">
+<input id="__tabbed_418541db_3a87_4c98_99b7_7c6efa40894b_3" name="__tabbed_418541db_3a87_4c98_99b7_7c6efa40894b" type="radio">
 <div class="tabbed-labels">
-<label for="__tabbed_849b7453_5123_428e_88a8_9b598e9543bf_1">US</label>
-<label for="__tabbed_849b7453_5123_428e_88a8_9b598e9543bf_2">EU</label>
-<label for="__tabbed_849b7453_5123_428e_88a8_9b598e9543bf_3">AP</label>
+<label for="__tabbed_418541db_3a87_4c98_99b7_7c6efa40894b_1">US</label>
+<label for="__tabbed_418541db_3a87_4c98_99b7_7c6efa40894b_2">EU</label>
+<label for="__tabbed_418541db_3a87_4c98_99b7_7c6efa40894b_3">AP</label>
 </div>
 <div class="tabbed-content">
 <div class="tabbed-block"><pre><code class="language-yaml"># Add to generated_values.yaml
@@ -6093,13 +6093,13 @@ holmes:
 <li>
 <p><strong>Model discovery</strong>: Available models are fetched from <code>${ROBUSTA_API_ENDPOINT}/api/llm/models/v3</code> - pick your region:</p>
 <div class="tabbed-set" data-tabs="1:3">
-<input checked="checked" id="__tabbed_9174c267_e2c3_4701_b1a8_d19d53a0b8ea_1" name="__tabbed_9174c267_e2c3_4701_b1a8_d19d53a0b8ea" type="radio">
-<input id="__tabbed_9174c267_e2c3_4701_b1a8_d19d53a0b8ea_2" name="__tabbed_9174c267_e2c3_4701_b1a8_d19d53a0b8ea" type="radio">
-<input id="__tabbed_9174c267_e2c3_4701_b1a8_d19d53a0b8ea_3" name="__tabbed_9174c267_e2c3_4701_b1a8_d19d53a0b8ea" type="radio">
+<input checked="checked" id="__tabbed_2fb04220_57b6_4243_a495_b3a96c1dbfad_1" name="__tabbed_2fb04220_57b6_4243_a495_b3a96c1dbfad" type="radio">
+<input id="__tabbed_2fb04220_57b6_4243_a495_b3a96c1dbfad_2" name="__tabbed_2fb04220_57b6_4243_a495_b3a96c1dbfad" type="radio">
+<input id="__tabbed_2fb04220_57b6_4243_a495_b3a96c1dbfad_3" name="__tabbed_2fb04220_57b6_4243_a495_b3a96c1dbfad" type="radio">
 <div class="tabbed-labels">
-<label for="__tabbed_9174c267_e2c3_4701_b1a8_d19d53a0b8ea_1">US</label>
-<label for="__tabbed_9174c267_e2c3_4701_b1a8_d19d53a0b8ea_2">EU</label>
-<label for="__tabbed_9174c267_e2c3_4701_b1a8_d19d53a0b8ea_3">AP</label>
+<label for="__tabbed_2fb04220_57b6_4243_a495_b3a96c1dbfad_1">US</label>
+<label for="__tabbed_2fb04220_57b6_4243_a495_b3a96c1dbfad_2">EU</label>
+<label for="__tabbed_2fb04220_57b6_4243_a495_b3a96c1dbfad_3">AP</label>
 </div>
 <div class="tabbed-content">
 <div class="tabbed-block"><pre><code>https://api.robusta.dev/api/llm/models/v3</code></pre></div>
@@ -6112,13 +6112,13 @@ holmes:
 <li>
 <p><strong>Proxy access</strong>: Models are accessed through Robusta's proxy endpoint at <code>${ROBUSTA_API_ENDPOINT}/llm/{model_name}</code> - pick your region:</p>
 <div class="tabbed-set" data-tabs="1:3">
-<input checked="checked" id="__tabbed_eaa828c0_05e0_4aa1_af2b_9db9ad844d7b_1" name="__tabbed_eaa828c0_05e0_4aa1_af2b_9db9ad844d7b" type="radio">
-<input id="__tabbed_eaa828c0_05e0_4aa1_af2b_9db9ad844d7b_2" name="__tabbed_eaa828c0_05e0_4aa1_af2b_9db9ad844d7b" type="radio">
-<input id="__tabbed_eaa828c0_05e0_4aa1_af2b_9db9ad844d7b_3" name="__tabbed_eaa828c0_05e0_4aa1_af2b_9db9ad844d7b" type="radio">
+<input checked="checked" id="__tabbed_4261c4b8_d4d4_4fb6_8f81_2b42485ad99c_1" name="__tabbed_4261c4b8_d4d4_4fb6_8f81_2b42485ad99c" type="radio">
+<input id="__tabbed_4261c4b8_d4d4_4fb6_8f81_2b42485ad99c_2" name="__tabbed_4261c4b8_d4d4_4fb6_8f81_2b42485ad99c" type="radio">
+<input id="__tabbed_4261c4b8_d4d4_4fb6_8f81_2b42485ad99c_3" name="__tabbed_4261c4b8_d4d4_4fb6_8f81_2b42485ad99c" type="radio">
 <div class="tabbed-labels">
-<label for="__tabbed_eaa828c0_05e0_4aa1_af2b_9db9ad844d7b_1">US</label>
-<label for="__tabbed_eaa828c0_05e0_4aa1_af2b_9db9ad844d7b_2">EU</label>
-<label for="__tabbed_eaa828c0_05e0_4aa1_af2b_9db9ad844d7b_3">AP</label>
+<label for="__tabbed_4261c4b8_d4d4_4fb6_8f81_2b42485ad99c_1">US</label>
+<label for="__tabbed_4261c4b8_d4d4_4fb6_8f81_2b42485ad99c_2">EU</label>
+<label for="__tabbed_4261c4b8_d4d4_4fb6_8f81_2b42485ad99c_3">AP</label>
 </div>
 <div class="tabbed-content">
 <div class="tabbed-block"><pre><code>https://api.robusta.dev/llm/{model_name}</code></pre></div>
